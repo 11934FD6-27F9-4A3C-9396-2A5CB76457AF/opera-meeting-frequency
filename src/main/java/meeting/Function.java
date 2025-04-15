@@ -1,4 +1,4 @@
-package omegapoint.opera.operationaljournal.api;
+package meeting;
 
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
