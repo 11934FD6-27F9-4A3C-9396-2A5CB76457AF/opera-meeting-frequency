@@ -1,11 +1,12 @@
 package meeting.frequency;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.microsoft.azure.functions.ExecutionContext;
+import com.microsoft.azure.functions.annotation.FunctionName;
+import com.microsoft.azure.functions.annotation.TimerTrigger;
 import meeting.frequency.parameter.ParameterService;
-import meeting.frequency.parameter.ParameterStoreService;
-import meeting.frequency.secret.SecretManagerService;
+import meeting.frequency.parameter.ParameterServiceImpl;
 import meeting.frequency.secret.SecretService;
+import meeting.frequency.secret.SecretServiceImpl;
 import meeting.frequency.service.fetch.FetchMessageService;
 import meeting.frequency.service.fetch.FetchSlackMessages;
 import meeting.frequency.service.fetch.model.Message;
@@ -21,7 +22,7 @@ import java.io.File;
 import java.util.Comparator;
 import java.util.List;
 
-public class Handler implements RequestHandler<Void, String> {
+public class Handler {
 
     private final FetchMessageService fetchMessageService;
     private final ProcessMessageService processMessageService;
@@ -39,8 +40,8 @@ public class Handler implements RequestHandler<Void, String> {
 
     public Handler() {
 
-        SecretService secretService = new SecretManagerService();
-        ParameterService parameterService = new ParameterStoreService();
+        SecretService secretService = new SecretServiceImpl();
+        ParameterService parameterService = new ParameterServiceImpl();
 
         this.fetchMessageService = new FetchSlackMessages(secretService, parameterService);
         this.processMessageService = new OpenAIService(secretService);
@@ -49,8 +50,10 @@ public class Handler implements RequestHandler<Void, String> {
     }
 
 
-    @Override
-    public String handleRequest(final Void unused, final Context context) {
+    @FunctionName("weekly-report-trigger")
+    public void weeklyRepost(final @TimerTrigger(
+                    name = "weekly-report-trigger",
+                    schedule = "0 2 * * 4") String timerInfo, ExecutionContext context) {
 
         try {
 
@@ -58,7 +61,7 @@ public class Handler implements RequestHandler<Void, String> {
             final List<Message> messages = fetchMessageService.fetchMessages();
 
             if(messages.isEmpty()){
-                return "No messages found";
+                throw new IllegalStateException("Could not find messages");
             }
 
             System.out.println("Process messages...");
@@ -85,8 +88,5 @@ public class Handler implements RequestHandler<Void, String> {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-
-
-        return "Success";
     }
 }

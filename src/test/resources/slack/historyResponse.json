@@ -1,0 +1,49 @@
+{
+  "ok": true,
+  "latest": "1743508957.000000",
+  "oldest": "1742907757.000000",
+  "messages": [
+    {
+      "user": "UMLF",
+      "type": "message",
+      "ts": "1743508273.230809",
+      "client_msg_id": "b8349f50-f37c-4017-91c7-60fa6f0851b8",
+      "text": "Testing1!",
+      "team": "TFDSFSD",
+      "blocks": [
+        {
+          "type": "rich_text",
+          "block_id": "tCqgl",
+          "elements": [
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "Testing1!"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "subtype": "channel_join",
+      "user": "UMLF",
+      "text": "<@UMLF> has joined the channel",
+      "type": "message",
+      "ts": "1743504626.880599"
+    }
+  ],
+  "has_more": false,
+  "pin_count": 0,
+  "channel_actions_ts": null,
+  "channel_actions_count": 0,
+  "warning": "missing_charset",
+  "response_metadata": {
+    "warnings": [
+      "missing_charset"
+    ]
+  }
+}

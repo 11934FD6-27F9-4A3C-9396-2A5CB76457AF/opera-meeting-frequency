@@ -1,0 +1,41 @@
+{
+  "name": "meeting_frequency",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "meetingFrequencyItems": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "meetings": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "companies": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "office": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "meetings",
+            "companies"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["meeting_frequency_items"],
+    "additionalProperties": false
+  }
+}
