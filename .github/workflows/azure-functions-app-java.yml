@@ -1,0 +1,114 @@
+# This workflow will build a Java project and deploy it to an Azure Functions App on Windows or Linux when a commit is pushed to your default branch.
+#
+# This workflow assumes you have already created the target Azure Functions app.
+# For instructions see https://learn.microsoft.com/en-us/azure/azure-functions/create-first-function-vs-code-java
+#
+# To configure this workflow:
+# 1. Set up the following secrets in your repository:
+#   - AZURE_FUNCTIONAPP_PUBLISH_PROFILE
+# 2. Change env variables for your configuration.
+#
+# For more information on:
+#   - GitHub Actions for Azure: https://github.com/Azure/Actions
+#   - Azure Functions Action: https://github.com/Azure/functions-action
+#   - Publish Profile: https://github.com/Azure/functions-action#using-publish-profile-as-deployment-credential-recommended
+#   - Azure Service Principal for RBAC: https://github.com/Azure/functions-action#using-azure-service-principal-for-rbac-as-deployment-credential
+#
+# For more samples to get started with GitHub Action workflows to deploy to Azure: https://github.com/Azure/actions-workflow-samples/tree/master/FunctionApp
+
+name: Deploy Java project to Azure Function App
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
+on:
+  push:
+    branches:
+      - "main"
+
+env:
+  POM_XML_DIRECTORY: './'
+  JAVA_VERSION: '17'
+  TEMPLATE_FILE_PATH: ./deployment/main.bicep
+  AZURE_SUBSCRIPTION_ID_DEV: 6fa245a8-a9b2-41b4-b085-6c525bd8cf2c
+  AZURE_SUBSCRIPTION_ID_PROD: 23bd191d-4253-41a5-8f9f-9604cd28c491
+  AZURE_RESOURCE_GROUP_NAME_DEV: opera-dev
+  AZURE_RESOURCE_GROUP_NAME_PROD: opera-prod
+  AZURE_FUNCTION_APP_NAME_DEV: opera-operations-dev
+  AZURE_FUNCTION_APP_NAME_PROD: opera-operations-prod
+
+jobs:
+  build-and-deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v3
+
+      # Log into Azure
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID_FUNCTIONS }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID_DEV }}
+
+      - name: Pull containers
+        run: docker pull maven:3.8.6-openjdk-18
+
+      - name: 'Restore Project Dependencies Using Mvn'
+        shell: bash #pwsh if windows, bash if linux
+        run: |
+          pushd '${{ env.POM_XML_DIRECTORY }}'
+          docker run -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.8.6-openjdk-18 mvn -T2C -q clean package
+          popd
+
+      - name: 'Run Mvn tests'
+        shell: bash #pwsh if windows, bash if linux
+        run: |
+          pushd '${{ env.POM_XML_DIRECTORY }}'
+          docker run -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.8.6-openjdk-18 mvn -T2C -q test
+          popd
+
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: ${{ env.AZURE_FUNCTION_APP_NAME_DEV }}
+          package: '${{ env.POM_XML_DIRECTORY }}'
+          respect-pom-xml: true
+
+
+  build-and-deploy-prod:
+    runs-on: ubuntu-latest
+    needs: build-and-deploy-dev
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v3
+
+      # Log into Azure PROD
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID_FUNCTIONS }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID_PROD }}
+
+      - name: Pull containers
+        run: docker pull maven:3.8.6-openjdk-18
+
+      - name: 'Restore Project Dependencies Using Mvn'
+        shell: bash #pwsh if windows, bash if linux
+        run: |
+          pushd '${{ env.POM_XML_DIRECTORY }}'
+          docker run -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.8.6-openjdk-18 mvn -T2C -q clean package
+          popd
+
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: ${{ env.AZURE_FUNCTION_APP_NAME_PROD }}
+          package: '${{ env.POM_XML_DIRECTORY }}'
+          respect-pom-xml: true
+

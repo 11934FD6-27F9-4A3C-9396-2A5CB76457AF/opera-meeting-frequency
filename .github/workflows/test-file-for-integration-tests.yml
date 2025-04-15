@@ -1,0 +1,17 @@
+name: Deploy to prod
+
+on:
+  workflow_dispatch:
+    inputs:
+      commitHash:
+        type: string
+        description: Hash of commit to deploy
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print a message
+        run: echo "${{ github.event.inputs.commitHash }}"
