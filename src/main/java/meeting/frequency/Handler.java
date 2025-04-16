@@ -1,8 +1,5 @@
 package meeting.frequency;
 
-import com.microsoft.azure.functions.ExecutionContext;
-import com.microsoft.azure.functions.annotation.FunctionName;
-import com.microsoft.azure.functions.annotation.TimerTrigger;
 import meeting.frequency.parameter.ParameterService;
 import meeting.frequency.parameter.ParameterServiceImpl;
 import meeting.frequency.secret.SecretService;
@@ -21,6 +18,8 @@ import meeting.frequency.service.upload.UploadService;
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Handler {
 
@@ -50,15 +49,11 @@ public class Handler {
     }
 
 
-    @FunctionName("weekly-report-trigger")
-    public void weeklyRepost(final @TimerTrigger(
-            name = "weekly-report-trigger",
-            schedule = "*/2 * * * *") String timerInfo,
-                             ExecutionContext context) {
+    public void weeklyRepost(final Logger logger) {
 
         try {
 
-            System.out.println("Fetching messages...");
+            logger.log(Level.FINE, "Fetching messages...");
             final List<Message> messages = fetchMessageService.fetchMessages();
 
             if (messages.isEmpty()) {

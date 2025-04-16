@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
@@ -47,7 +48,7 @@ class HandlerTest {
         givenGenerateDocumentServiceReturns();
         givenUploadServiceReturnsTrue();
 
-        handler.weeklyRepost(null, null);
+        handler.weeklyRepost(Logger.getLogger("test"));
     }
 
     /*
