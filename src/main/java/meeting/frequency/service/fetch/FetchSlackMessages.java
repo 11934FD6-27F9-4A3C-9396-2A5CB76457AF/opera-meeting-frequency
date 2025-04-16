@@ -41,7 +41,9 @@ public class FetchSlackMessages implements FetchMessageService{
     @Override
     public List<Message> fetchMessages(){
 
-        final SlackHistoryResponse slackHistoryResponse = slackHttpClient.fetchSlackHistory(ZonedDateTime.now(ZoneId.of("Europe/Stockholm")).minusDays(DAYS_TO_READ).toEpochSecond());
+        final SlackHistoryResponse slackHistoryResponse = slackHttpClient.fetchSlackHistory(
+                ZonedDateTime.now(ZoneId.of("Europe/Stockholm")).minusDays(DAYS_TO_READ).toEpochSecond()
+        );
 
         final Map<String, List<MessagesItem>> userIdToMessagesMap = slackHistoryResponse.messages()
                 .stream()
@@ -87,6 +89,8 @@ public class FetchSlackMessages implements FetchMessageService{
         }
 }
 
+
+    //Uses virtual Threads. Not available in Java 17
     /*
     private Map<String, String> processUsersConcurrently(final Set<String> inputSet) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {

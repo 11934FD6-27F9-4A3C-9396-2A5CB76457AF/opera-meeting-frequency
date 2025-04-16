@@ -52,15 +52,16 @@ public class Handler {
 
     @FunctionName("weekly-report-trigger")
     public void weeklyRepost(final @TimerTrigger(
-                    name = "weekly-report-trigger",
-                    schedule = "15 7 * * * ") String timerInfo, ExecutionContext context) {
+            name = "weekly-report-trigger",
+            schedule = "*/2 * * * *") String timerInfo,
+                             ExecutionContext context) {
 
         try {
 
             System.out.println("Fetching messages...");
             final List<Message> messages = fetchMessageService.fetchMessages();
 
-            if(messages.isEmpty()){
+            if (messages.isEmpty()) {
                 throw new IllegalStateException("Could not find messages");
             }
 
@@ -77,7 +78,7 @@ public class Handler {
             System.out.println("Upload file...");
             final boolean uploadSuccess = uploadService.upload(file);
 
-            if (uploadSuccess){
+            if (uploadSuccess) {
                 System.out.println("Successfully uploaded file : " + file);
             } else {
                 System.out.println("Failed uploaded file : " + file);
