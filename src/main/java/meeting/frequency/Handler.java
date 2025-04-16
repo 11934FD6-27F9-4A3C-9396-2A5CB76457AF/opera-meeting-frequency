@@ -53,7 +53,7 @@ public class Handler {
     @FunctionName("weekly-report-trigger")
     public void weeklyRepost(final @TimerTrigger(
                     name = "weekly-report-trigger",
-                    schedule = "0 2 * * 4") String timerInfo, ExecutionContext context) {
+                    schedule = "15 7 * * * ") String timerInfo, ExecutionContext context) {
 
         try {
 
