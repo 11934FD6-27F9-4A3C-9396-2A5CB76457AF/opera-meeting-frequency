@@ -13,7 +13,7 @@ public class Function {
     public void weeklyRepost(
             final @TimerTrigger(
                     name = "dailyAlertTrigger",
-                    schedule = "0 */2 * * * *"
+                    schedule = "0 2 * * 4"
             ) String timerInfo,
             ExecutionContext context) {
         Logger logger = context.getLogger();
