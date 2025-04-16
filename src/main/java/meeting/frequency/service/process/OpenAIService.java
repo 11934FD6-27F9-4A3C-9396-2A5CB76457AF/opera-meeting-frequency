@@ -13,7 +13,9 @@ import meeting.frequency.service.fetch.model.Message;
 import meeting.frequency.service.process.model.MeetingFrequency;
 import meeting.frequency.service.process.model.MeetingFrequencyItems;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -86,14 +88,14 @@ public class OpenAIService implements ProcessMessageService{
                "if it is separated, put it as its own entry in the string array in companies. Attribute office is after the \"-->\" to the right of it att the end before line-break";
     }
 
-    private ResponseFormatJsonSchema getJsonSchema() throws IOException, URISyntaxException {
+    private ResponseFormatJsonSchema getJsonSchema() throws IOException {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("openai/MeetingFrequencyJsonSchema.json")) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Resource not found: openai/MeetingFrequencyJsonSchema.json");
+            }
 
-        ClassLoader classLoader = this.getClass().getClassLoader();
-        URL resource = classLoader.getResource("openai/MeetingFrequencyJsonSchema.json");
-        Path path = Paths.get(resource.toURI());
-        final String contents = Files.readString(path);
-
-        final ResponseFormatJsonSchema.JsonSchema jsonSchema = objectMapper.readValue(contents, ResponseFormatJsonSchema.JsonSchema.class);
-        return ResponseFormatJsonSchema.builder().jsonSchema(jsonSchema).build();
+            final ResponseFormatJsonSchema.JsonSchema jsonSchema = objectMapper.readValue(inputStream, ResponseFormatJsonSchema.JsonSchema.class);
+            return ResponseFormatJsonSchema.builder().jsonSchema(jsonSchema).build();
+        }
     }
 }
