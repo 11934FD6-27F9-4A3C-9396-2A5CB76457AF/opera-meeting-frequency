@@ -61,7 +61,7 @@ public class ExcelClient {
         sheet.autoSizeColumn(3);
 
         //Only way to store write files on AWS lambda
-        File classDir = new File("/tmp/");
+        File classDir = new File(System.getProperty("java.io.tmpdir"));
 
         File file = new File(classDir,
                 "MeetingFrequency %s.xlsx".formatted(LocalDate.now().minusDays(7) + " - " + LocalDate.now()));
