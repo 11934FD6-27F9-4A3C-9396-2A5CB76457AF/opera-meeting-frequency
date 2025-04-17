@@ -12,8 +12,8 @@ public class Function {
     @FunctionName("weekly-report-trigger")
     public void weeklyRepost(
             final @TimerTrigger(
-                    name = "dailyAlertTrigger",
-                    schedule = "0 2 * * 4"
+                    name = "weeklyAlertTrigger",
+                    schedule = "0 0 10 * * 4"
             ) String timerInfo,
             ExecutionContext context) {
         Logger logger = context.getLogger();
