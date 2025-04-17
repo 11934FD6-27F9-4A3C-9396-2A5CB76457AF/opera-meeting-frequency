@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -27,7 +28,7 @@ class HandlerTest {
     private final GenerateDocumentService generateDocumentService = mock(GenerateDocumentService.class);
     private final UploadService uploadService = mock(UploadService.class);
 
-    private final Handler handler = new Handler(fetchMessageService, processMessageService, generateDocumentService, uploadService);
+    private final Handler handler = new Handler(fetchMessageService, processMessageService, generateDocumentService, uploadService, Logger.getLogger("test"));
 
     private final static List<Message> MESSAGES = List.of(new Message("Test T", "Stockholm", List.of("1 möte, OP")));
     private final static List<MeetingFrequency> MEETING_FREQUENCIES = List.of(new MeetingFrequency("Test T", 1,  List.of("OP"), ""));
@@ -48,10 +49,9 @@ class HandlerTest {
         givenGenerateDocumentServiceReturns();
         givenUploadServiceReturnsTrue();
 
-        handler.weeklyRepost(Logger.getLogger("test"));
+        handler.weeklyRepost();
     }
 
-    /*
     @Test
     public void should_handle_failed_upload() throws Exception {
         givenMessageServiceReturns();
@@ -59,12 +59,8 @@ class HandlerTest {
         givenGenerateDocumentServiceReturns();
         givenUploadServiceReturnsFalse();
 
-        final String result = handler.handleRequest(null, null);
-
-        assertEquals("Failed", result);
+        assertThrows(RuntimeException.class, handler::weeklyRepost);
     }
-
-     */
 
     private void givenMessageServiceReturns() throws URISyntaxException {
         given(fetchMessageService.fetchMessages())

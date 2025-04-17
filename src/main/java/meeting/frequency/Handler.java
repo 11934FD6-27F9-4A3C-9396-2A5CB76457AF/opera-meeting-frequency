@@ -28,55 +28,61 @@ public class Handler {
     private final GenerateDocumentService generateDocumentService;
     private final UploadService uploadService;
 
+    private final Logger logger;
+
     public Handler(final FetchMessageService fetchMessageService, final ProcessMessageService processMessageService,
-                   final GenerateDocumentService generateDocumentService, final UploadService uploadService) {
+                   final GenerateDocumentService generateDocumentService, final UploadService uploadService,
+                   final Logger logger) {
 
         this.fetchMessageService = fetchMessageService;
         this.processMessageService = processMessageService;
         this.generateDocumentService = generateDocumentService;
         this.uploadService = uploadService;
+        this.logger = logger;
     }
 
-    public Handler() {
+    public Handler(final Logger logger) {
 
         SecretService secretService = new SecretServiceImpl();
         ParameterService parameterService = new ParameterServiceImpl();
 
-        this.fetchMessageService = new FetchSlackMessages(secretService, parameterService);
+        this.fetchMessageService = new FetchSlackMessages(secretService, parameterService, logger);
         this.processMessageService = new OpenAIService(secretService);
         this.generateDocumentService = new ExcelDocumentService();
-        this.uploadService = new SlackUploadService(secretService);
+        this.uploadService = new SlackUploadService(secretService, logger);
+        this.logger = logger;
     }
 
 
-    public void weeklyRepost(final Logger logger) {
+    public void weeklyRepost() {
 
         try {
 
-            logger.log(Level.FINE, "Fetching messages...");
+            logger.log(Level.INFO, "Fetching messages...");
             final List<Message> messages = fetchMessageService.fetchMessages();
 
             if (messages.isEmpty()) {
+                logger.log(Level.SEVERE, "Could not find messages");
                 throw new IllegalStateException("Could not find messages");
             }
 
-            System.out.println("Process messages...");
+            logger.log(Level.INFO, "Process messages...");
             final List<MeetingFrequency> meetingFrequency = processMessageService.process(messages)
                     .stream()
                     .filter(frequency -> frequency.meetings() > 0)
                     .sorted(Comparator.comparingInt(MeetingFrequency::meetings).reversed())
                     .toList();
 
-            System.out.println("Generate file...");
+            logger.log(Level.INFO, "Generate file...");
             File file = generateDocumentService.generateDocument(meetingFrequency);
 
-            System.out.println("Upload file...");
+            logger.log(Level.INFO, "Upload file...");
             final boolean uploadSuccess = uploadService.upload(file);
 
             if (uploadSuccess) {
-                System.out.println("Successfully uploaded file : " + file);
+                logger.log(Level.INFO, "Successfully uploaded file : " + file);
             } else {
-                System.out.println("Failed uploaded file : " + file);
+                logger.log(Level.SEVERE, "Failed uploaded file : " + file);
                 throw new RuntimeException("Failed to upload file");
             }
 

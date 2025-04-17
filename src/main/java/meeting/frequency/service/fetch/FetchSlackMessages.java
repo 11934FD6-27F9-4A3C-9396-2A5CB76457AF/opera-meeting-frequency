@@ -15,6 +15,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class FetchSlackMessages implements FetchMessageService{
@@ -22,20 +24,26 @@ public class FetchSlackMessages implements FetchMessageService{
     private final SlackHttpClient slackHttpClient;
     private final static int DAYS_TO_READ = 7;
     private final Map<String, Office> nameCorrespondingOffice;
+    private final Logger logger;
 
 
-    public FetchSlackMessages(final SecretService secretService, final ParameterService parameterService) {
+    public FetchSlackMessages(final SecretService secretService,
+                              final ParameterService parameterService,
+                              final Logger logger) {
 
-        this.slackHttpClient = new SlackHttpClient(secretService);
+        this.slackHttpClient = new SlackHttpClient(secretService, logger);
         this.nameCorrespondingOffice = parameterService.personToOfficeMapping();
+        this.logger = logger;
 
     }
 
     public FetchSlackMessages(final SlackHttpClient slackHttpClient,
-                              final Map<String, Office> nameCorrespondingOffice) {
+                              final Map<String, Office> nameCorrespondingOffice,
+                              final Logger logger) {
 
         this.slackHttpClient = slackHttpClient;
         this.nameCorrespondingOffice = nameCorrespondingOffice;
+        this.logger = logger;
     }
 
     @Override
@@ -65,7 +73,7 @@ public class FetchSlackMessages implements FetchMessageService{
 
 
         if(!nameCorrespondingOffice.containsKey(nameToMessages.getKey())){
-            System.out.printf("Could not match %s to any office%n", nameToMessages.getKey());
+            logger.log(Level.WARNING, "Could not match %s to any office%n", nameToMessages.getKey());
         }
 
         return new Message(nameToMessages.getKey(),

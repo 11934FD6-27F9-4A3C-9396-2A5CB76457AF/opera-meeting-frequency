@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,7 +34,7 @@ class FetchSlackMessagesTest {
             "Bengt testsson", Office.STOCKHOLM
     );
 
-    private final FetchSlackMessages fetchSlackMessages = new FetchSlackMessages(slackHttpClient, nameToOfficeMapping);
+    private final FetchSlackMessages fetchSlackMessages = new FetchSlackMessages(slackHttpClient, nameToOfficeMapping, Logger.getLogger("test"));
 
     private final static String USER_ID_1 = "123";
     private final static String USER_ID_2 = "456";

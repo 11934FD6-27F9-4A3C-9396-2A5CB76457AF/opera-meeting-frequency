@@ -19,6 +19,8 @@ This report is then uploaded to Slack.
 
 ## Slack API Permissions
 
+Slack bot is called *Meeting Frequency Helper*.
+
 Slack API permissions:
 
 - ```channels:history```

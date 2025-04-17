@@ -20,6 +20,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -33,7 +34,7 @@ class SlackHttpClientTest {
 
     private final SlackSecrets slackSecrets = new SlackSecrets("token", "12345", "12345");
     private final HttpClient httpClient = mock(HttpClient.class);
-    private final SlackHttpClient slackHttpClient = new SlackHttpClient(slackSecrets, httpClient);
+    private final SlackHttpClient slackHttpClient = new SlackHttpClient(slackSecrets, httpClient, Logger.getLogger("test"));
 
 
     @Test

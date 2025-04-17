@@ -27,12 +27,15 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SlackHttpClient {
 
     private final SlackSecrets slackSecrets;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Logger logger;
 
     private static final String HISTORY_URL = "https://slack.com/api/conversations.history";
     private static final String USER_INFO_URL = "https://slack.com/api/users.info";
@@ -41,15 +44,16 @@ public class SlackHttpClient {
 
     private final static int LIMIT_HISTORY_RESPONSE = 999;
 
-    public SlackHttpClient(final SecretService secretService) {
+    public SlackHttpClient(final SecretService secretService, final Logger logger) {
         this.slackSecrets = secretService.fetchSlackSecrets();
-        this.httpClient = HttpClient.newBuilder()
-                .build();
+        this.httpClient = HttpClient.newBuilder().build();
+        this.logger = logger;
     }
 
-    public SlackHttpClient(final SlackSecrets slackSecrets, final HttpClient httpClient) {
+    public SlackHttpClient(final SlackSecrets slackSecrets, final HttpClient httpClient, final Logger logger) {
         this.slackSecrets = slackSecrets;
         this.httpClient = httpClient;
+        this.logger = logger;
     }
 
     public SlackHistoryResponse fetchSlackHistory(final long startTimestamp){
@@ -69,7 +73,7 @@ public class SlackHttpClient {
                 return slackHistoryResponse;
             }
 
-            System.out.printf("Error when fetching channel history : %s".formatted(slackHistoryResponse.error()));
+            logger.log(Level.SEVERE, "Error when fetching channel history : %s".formatted(slackHistoryResponse.error()));
             return new SlackHistoryResponse(false, List.of(), false, slackHistoryResponse.error());
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,7 +98,8 @@ public class SlackHttpClient {
                 return slackUserInfoResponse;
             }
 
-            System.out.printf("Could not fetch user info on userId %s, got the following error : %s%n", userId, slackUserInfoResponse.error());
+            logger.log(Level.SEVERE, "Could not fetch user info on userId %s, got the following error : %s%n"
+                    .formatted(userId, slackUserInfoResponse.error()));
             return new SlackUserInfoResponse(false, User.EMPTY_USER(), slackUserInfoResponse.error());
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,8 +144,8 @@ public class SlackHttpClient {
         if(slackUploadStartResponse.ok()){
             return slackUploadStartResponse;
         }
-        System.out.println("Error when fetching start upload url : " + slackUploadStartResponse);
 
+        logger.log(Level.SEVERE, "Error when fetching start upload url : " + slackUploadStartResponse);
         throw new IllegalStateException("Error when fetching upload url");
     }
 
@@ -167,8 +172,7 @@ public class SlackHttpClient {
             return true;
         }
 
-        System.out.println("Status code " + response.statusCode());
-        System.out.println("Error when uploading file " + response.body());
+        logger.log(Level.SEVERE, "Error when uploading file " + response.body());
 
         return false;
     }
@@ -195,7 +199,7 @@ public class SlackHttpClient {
             return true;
         }
 
-        System.out.println("Error when completing upload of file " + response.body());
+        logger.log(Level.SEVERE, "Error when completing upload of file " + response.body());
 
         return false;
     }
